@@ -150,7 +150,7 @@ static int enable_smccc_arch_workaround_1(void *data)
 	void *smccc_start, *smccc_end;
 	struct arm_smccc_res res;
 
-	if (!entry->matches(entry, SCOPE_LOCAL_CPU))
+	if (!entry->matches(entry))
 		return 0;
 
 	if (psci_ops.smccc_version == SMCCC_VERSION_1_0)
@@ -183,36 +183,6 @@ static int enable_smccc_arch_workaround_1(void *data)
 
 	install_bp_hardening_cb(entry, cb, smccc_start, smccc_end);
 
-	return 0;
-}
-
-static void __maybe_unused qcom_link_stack_sanitization(void)
-{
-	u64 tmp;
-
-	asm volatile("mov	%0, x30		\n"
-		     ".rept	16		\n"
-		     "bl	. + 4		\n"
-		     ".endr			\n"
-		     "mov	x30, %0		\n"
-		     : "=&r" (tmp));
-}
-
-static void __maybe_unused qcom_bp_hardening(void)
-{
-	qcom_link_stack_sanitization();
-	if (psci_ops.get_version)
-		psci_ops.get_version();
-}
-
-static int __maybe_unused enable_qcom_bp_hardening(void *data)
-{
-	const struct arm64_cpu_capabilities *entry = data;
-
-	install_bp_hardening_cb(entry,
-				(bp_hardening_cb_t)qcom_bp_hardening,
-				__psci_hyp_bp_inval_start,
-				__psci_hyp_bp_inval_end);
 	return 0;
 }
 
@@ -328,7 +298,7 @@ const struct arm64_cpu_capabilities arm64_errata[] = {
 		.capability = ARM64_HARDEN_BRANCH_PREDICTOR,
 		.midr_model = MIDR_QCOM_KRYO,
 		.matches = is_kryo_midr,
-		.enable = enable_qcom_bp_hardening,
+		.enable = enable_smccc_arch_workaround_1,
 	},
 #endif
 	{
