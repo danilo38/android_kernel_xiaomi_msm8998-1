@@ -135,9 +135,9 @@ static void add_module_to_shadow(struct cfi_shadow *s, struct module *mod)
 	if (check_index < 0)
 		return; /* Module not addressable with shadow */
 
-	min_page_addr = (unsigned long)mod->core_layout.base & PAGE_MASK;
-	max_page_addr = (unsigned long)mod->core_layout.base +
-				       mod->core_layout.text_size;
+	min_page_addr = (unsigned long)mod->module_core & PAGE_MASK;
+	max_page_addr = (unsigned long)mod->module_core +
+				       mod->core_text_size;
 	max_page_addr &= PAGE_MASK;
 
 	/* For each page, store the check function index in the shadow */
@@ -157,9 +157,9 @@ static void remove_module_from_shadow(struct cfi_shadow *s, struct module *mod)
 	unsigned long min_page_addr;
 	unsigned long max_page_addr;
 
-	min_page_addr = (unsigned long)mod->core_layout.base & PAGE_MASK;
-	max_page_addr = (unsigned long)mod->core_layout.base +
-				       mod->core_layout.text_size;
+	min_page_addr = (unsigned long)mod->module_core & PAGE_MASK;
+	max_page_addr = (unsigned long)mod->module_core +
+				       mod->core_text_size;
 	max_page_addr &= PAGE_MASK;
 
 	for (ptr = min_page_addr; ptr <= max_page_addr; ptr += PAGE_SIZE) {
@@ -220,7 +220,6 @@ static inline cfi_check_fn ptr_to_check_fn(const struct cfi_shadow __rcu *s,
 	unsigned long ptr)
 {
 	int index;
-	unsigned long check;
 
 	if (unlikely(!s))
 		return NULL; /* No shadow available */
