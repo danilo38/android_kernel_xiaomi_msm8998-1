@@ -69,6 +69,9 @@ source "sound/soc/ux500/Kconfig"
 source "sound/soc/xtensa/Kconfig"
 source "sound/soc/zte/Kconfig"
 
+config SOUND_CONTROL
+	bool "Sound control for wcd9335"
+
 # Supported codecs
 source "sound/soc/codecs/Kconfig"
 
